@@ -1,0 +1,5 @@
+path: /root/CarND-Advanced-Lane-Lines-master/data/my_dataset
+train: train/images
+val: val/images
+nc: 1
+names: ['lane']

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:universe.roboflow.com)",
+      "WebFetch(domain:www.kaggle.com)",
+      "Bash(python3 -c ' *)",
+      "Bash(ls -la ~/.cache/ultralytics/yolo26n.pt 2>/dev/null || echo \"yolo26n not cached\" *)",
+      "Read(//root/.cache/ultralytics/**)",
+      "Bash(python3 -c \"import py_compile; py_compile.compile\\('harder_yolo.py', doraise=True\\)\")"
+    ]
+  }
+}
