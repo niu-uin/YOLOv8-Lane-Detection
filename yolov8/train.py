@@ -15,13 +15,11 @@ model.train(
     project='runs',
     name='yolov8m_lane',
     exist_ok=True,
-    augment=True,
+    augment=True,             #启用 YOLOv8 的数据增强
     amp=True,                 # 混合精度，节省显存
     patience=0,               # 关闭早停
     save=True,
     verbose=True,
-    workers=16,
+    workers=16,               #数据加载的子进程数
     mosaic=0.0,               # 数据少，保持关闭
-    # 可额外添加：
-    # scale=0.5, translate=0.1, erasing=0.4,  # 这些都是默认值，不需要重复写
 )
