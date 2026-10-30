@@ -1,20 +1,6 @@
 
 """
-YOLOv8n-seg 车道线检测（大弯道强化版 v4）
-
-=== 原始问题 ===
-  Q1. 大转弯时绿色区域突然消失，平稳后才重新出现
-  Q2. 只有单侧车道在画面内时（另一侧出画面），完全检测失败
-  Q3. 不确定是代码问题还是模型训练不足
-  Q4. 视频转弯多且弯度非常大
-
-=== 修复方案（对应每个问题）===
-  FIX-A  [Q2]  extract_lane_centerlines 改为支持单车道返回
-                 原版：只要有一侧没检测到就返回 (None, None)
-                 新版：能检测到几条就返回几条，没检测到的那一侧返回 None
-
-  FIX-C  [Q1]  自适应平滑（smooth_fit）+ 帧间历史拟合
-                 用指数平滑替代 streak 计数，帧间连续性更好
+YOLOv8n-seg 车道线检测
 
 """
 
@@ -166,10 +152,7 @@ def img_perspect_transform(img, M):
 def extract_lane_centerlines(binary, prev_left_fit=None, prev_right_fit=None):
     """
     从二值图中提取左右车道线的中心线点集。
-
-    Bug2 修复：使用「底部 x 坐标排序」+「历史先验最近邻匹配」替代原来的
-    mean_x < mid_x(=640) 划分方式，解决弯道中左右车道线偏向同侧时的错配问题。
-
+    
     原版问题的本质：
       弯道中两条车道线可能都在图像中线的同一侧（例如都 < 640 或都 > 640），
       简单的 mean_x < mid_x 规则会错误地把属于右侧的车道线也归为左侧。
@@ -198,13 +181,13 @@ def extract_lane_centerlines(binary, prev_left_fit=None, prev_right_fit=None):
         return None, None
 
     h, w = binary.shape
-    # 过滤面积过小的噪声轮廓（提高阈值从100到300）
+    # 过滤面积过小的噪声轮廓
     valid = [c for c in contours if cv2.contourArea(c) >= 300]
     if not valid:
         return None, None
 
     def bottom_x(cnt):
-        """取轮廓底部20%行的平均x（比全局mean_x更稳定，尤其弯道时）"""
+        """取轮廓底部20%行的平均x"""
         pts = cnt.reshape(-1, 2)
         thresh = h * 0.80
         bot = pts[pts[:, 1] >= thresh]
@@ -444,7 +427,7 @@ def process_single_image(img, mtx, dist, M, M_inv, src_points):
     warp   = img_perspect_transform(binary, M)
 
     # ── 传入历史先验解决弯道左右错配 ───────────────────────────────
-    # Bug2 修复：将上一帧的左右拟合参数传给 extract_lane_centerlines，
+    # Bug修复：将上一帧的左右拟合参数传给 extract_lane_centerlines，
     # 使其在弯道两侧线偏向同侧时能通过最近邻匹配正确分配左右。
     left_lane, right_lane = extract_lane_centerlines(
         warp,
